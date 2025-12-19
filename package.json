@@ -1,0 +1,21 @@
+{
+  "name": "langchain-google-genai",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx examples.ts"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/genai": "^1.34.0",
+    "@langchain/core": "^1.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "tsx": "^4.21.0"
+  }
+}
