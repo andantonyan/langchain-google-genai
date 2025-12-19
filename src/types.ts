@@ -120,6 +120,13 @@ export interface ChatGoogleGenAIInput extends BaseChatModelParams {
    * Defaults to false.
    */
   background?: boolean;
+
+  /**
+   * Whether to store the interaction.
+   * Defaults to true. Set to false to opt out of storage.
+   * Note: store=false is incompatible with background=true and prevents using previousInteractionId.
+   */
+  store?: boolean;
 }
 
 /**

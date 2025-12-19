@@ -12,7 +12,9 @@
   "description": "",
   "dependencies": {
     "@google/genai": "^1.34.0",
-    "@langchain/core": "^1.1.7"
+    "@langchain/community": "^1.1.1",
+    "@langchain/core": "^1.1.7",
+    "langchain": "^1.2.2"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

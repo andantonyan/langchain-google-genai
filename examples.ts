@@ -1,5 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
+import { Calculator } from '@langchain/community/tools/calculator';
+import { createAgent } from 'langchain';
 
 import { ChatGoogleGenAI } from './src';
 
@@ -306,7 +308,7 @@ async function testStructuredOutput() {
 }
 
 /**
- * 6. Deep Research Agent (Async/Manual Polling)
+ * 8. Deep Research Agent (Async/Manual Polling)
  * This test is defined but NOT run by default as requested.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -360,6 +362,57 @@ async function testDeepResearchAgent() {
   });
 }
 
+/**
+ * 9. Gemini 3 Agent with Tools
+ */
+async function testGemini3Agent() {
+  console.log('\n\n==================================================');
+  console.log('RUNNING SUITE: Gemini 3 Agent with Tools');
+  console.log('==================================================');
+
+  const model = new ChatGoogleGenAI({
+    model: 'gemini-3-flash-preview',
+    temperature: 0,
+    useExperimentalInteractionsApi: true,
+  });
+
+  const agent = createAgent({
+    model: model,
+    tools: [new Calculator()],
+  });
+
+  console.log('User: Calculate 1 + 1 using calculator tool.');
+  const res = await agent.invoke({
+    messages: [['human', 'Calculate 1 + 1 using calculator tool.']],
+  });
+
+  console.log('Agent Response:', JSON.stringify(res.messages, null, 2));
+}
+
+/**
+ * 10. Store Parameter Test
+ */
+async function testStoreParameter() {
+  console.log('\n\n==================================================');
+  console.log('RUNNING SUITE: Interactions API: Store Parameter');
+  console.log('==================================================\n');
+
+  const modelNoStore = new ChatGoogleGenAI({
+    model: 'gemini-2.5-flash',
+    useExperimentalInteractionsApi: true,
+    store: false,
+  });
+  console.log('--- Testing store=false ---');
+  const resNoStore = await modelNoStore.invoke('Hello, are you stored?');
+  console.log(`[Invoke] AI: ${resNoStore.content}`);
+  const interactionId = resNoStore.response_metadata?.interaction_id;
+  if (!interactionId) {
+    console.log('SUCCESS: Interaction ID is missing as expected.');
+  } else {
+    console.log('FAILURE: Interaction ID is present despite store=false.');
+  }
+}
+
 try {
   await testStandardBasic();
   await testInteractionsBasic();
@@ -368,6 +421,9 @@ try {
   await testGemini3Thoughts();
   await testGemini25Thoughts();
   await testStructuredOutput();
+  await testStoreParameter();
+  await testStoreParameter();
+  await testGemini3Agent();
   // await testDeepResearchAgent();
 } catch (e) {
   console.error('Test Suite Failed:', e);

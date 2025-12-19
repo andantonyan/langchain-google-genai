@@ -79,6 +79,8 @@ export class ChatGoogleGenAI extends BaseChatModel<ChatGoogleGenAICallOptions> {
 
   background?: boolean;
 
+  store?: boolean;
+
   get requiredAgent(): string {
     if (!this.agent) {
       throw new Error('This operation requires an agent to be specified.');
@@ -109,13 +111,18 @@ export class ChatGoogleGenAI extends BaseChatModel<ChatGoogleGenAICallOptions> {
     this.model = fields?.model;
     this.agent = fields?.agent;
     this.background = fields?.background;
+    this.store = fields?.store;
+
+    if (this.store === false && this.background === true) {
+      throw new Error('Invalid configuration: "store" cannot be false when "background" is true.');
+    }
 
     if (this.agent) {
+      if (fields?.useExperimentalInteractionsApi === false) {
+        throw new Error('When "agent" is specified, "useExperimentalInteractionsApi" must be true.');
+      }
       // Agents implicitly use interactions API
       this.useExperimentalInteractionsApi = true;
-      if (fields?.useExperimentalInteractionsApi === false) {
-        throw new Error('When "agent" is specified, "useInteractions" must be true.');
-      }
     } else {
       this.useExperimentalInteractionsApi = fields?.useExperimentalInteractionsApi ?? false;
     }
@@ -584,6 +591,7 @@ export class ChatGoogleGenAI extends BaseChatModel<ChatGoogleGenAICallOptions> {
       stream,
       input,
       previous_interaction_id: options.previousInteractionId,
+      store: this.store,
     };
   }
 
@@ -612,6 +620,7 @@ export class ChatGoogleGenAI extends BaseChatModel<ChatGoogleGenAICallOptions> {
       response_format: params.responseSchema,
       background: options.background ?? this.background,
       stream,
+      store: this.store,
     };
   }
 
