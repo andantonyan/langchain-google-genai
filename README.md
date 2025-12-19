@@ -53,6 +53,8 @@ console.log(response.content);
 
 ### Tool Calling with Gemini 3 (with `thought_signature`)
 
+The standard API implementation correctly handles `thought_signature` for Gemini 3 "Thinking" models.
+
 ```typescript
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -60,14 +62,12 @@ import { ChatGoogleGenAI } from './src';
 
 const model = new ChatGoogleGenAI({
   model: 'gemini-3-flash-preview',
-  useExperimentalInteractionsApi: true, // Recommended for Gemini 3
 });
 
-const weatherTool = tool({
+const weatherTool = tool(async ({ city }) => `The weather in ${city} is sunny.`, {
   name: 'get_weather',
   description: 'Get weather for a city',
   schema: z.object({ city: z.string() }),
-  func: async ({ city }) => `The weather in ${city} is sunny.`,
 });
 
 const modelWithTools = model.bindTools([weatherTool]);
@@ -78,7 +78,9 @@ const res = await modelWithTools.invoke('What is the weather in London?');
 console.log('Tool Calls:', res.tool_calls);
 ```
 
-### Stateful Conversation using Interactions API
+### Stateful Conversation (Interactions API)
+
+The Interactions API supports stateful conversations, allowing the model to remember context across turns without sending the full history every time.
 
 ```typescript
 const model = new ChatGoogleGenAI({
@@ -86,17 +88,31 @@ const model = new ChatGoogleGenAI({
   useExperimentalInteractionsApi: true,
 });
 
-// Turn 1
+// Turn 1: Start the conversation
 const res1 = await model.invoke('Hi, my name is Phil.');
 console.log(res1.content);
 
+// Capture the interaction ID from the response metadata
 const interactionId = res1.response_metadata['interaction_id'];
 
-// Turn 2 (maintains context)
+// Turn 2: Continue the conversation (pass the ID)
 const res2 = await model.invoke('What is my name?', {
   previousInteractionId: interactionId,
 });
-console.log(res2.content); // AI will remember your name
+console.log(res2.content); // "Your name is Phil."
+```
+
+### Using Agents (Interactions API)
+
+You can also use predefined Google Agents, such as the Deep Research agent.
+
+```typescript
+const agent = new ChatGoogleGenAI({
+  agent: 'deep-research-pro-preview-12-2025',
+});
+
+const response = await agent.invoke('Research the history of Google TPUs.');
+console.log(response.content);
 ```
 
 ## Running Examples
